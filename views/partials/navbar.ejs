@@ -1,0 +1,114 @@
+<style>
+    :root {
+        --nav-bg: <%=theme.primary %>;
+        --nav-text: #ffffff;
+        --button-bg: <%=theme.primary %>;
+        --button-text: #ffffff;
+        --border-color: <%=theme.borderColor %>;
+        --accent-color: <%=theme.accent %>;
+    }
+
+    .navbar {
+        background-color: var(--nav-bg);
+    }
+
+    .navbar-toggler {
+        background-color: var(--nav-text);
+    }
+
+    .nav-link {
+        color: var(--nav-text) !important;
+    }
+
+    .nav-link:hover {
+        opacity: 0.8;
+    }
+
+    .search-input {
+        border-color: var(--border-color);
+    }
+
+    .btn-theme {
+        background-color: var(--button-bg);
+        color: var(--button-text);
+    }
+
+    .btn-theme:hover {
+        opacity: 0.9;
+        color: var(--button-text);
+    }
+
+    .badge-theme {
+        background-color: var(--accent-color);
+    }
+</style>
+
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <img src="/images/logo.png" alt="Bely Store" height="40">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Trang chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/products">Sản phẩm</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/about">Giới thiệu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/contact">Liên hệ</a>
+                </li>
+            </ul>
+            <form class="d-flex me-3" action="/search" method="GET">
+                <div class="input-group">
+                    <input type="text" class="form-control search-input" name="q" placeholder="Tìm kiếm sản phẩm..."
+                        value="<%= locals.searchQuery || '' %>">
+                    <button class="btn btn-theme" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+            <div class="d-flex align-items-center">
+                <a href="/cart" class="btn btn-theme position-relative me-2">
+                    <i class="fas fa-shopping-cart"></i>
+                    <% if (locals.cartCount && cartCount> 0) { %>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill badge-theme">
+                            <%= cartCount %>
+                        </span>
+                        <% } %>
+                </a>
+                <% if (locals.user) { %>
+                    <div class="dropdown">
+                        <button class="btn btn-theme dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i>
+                            <%= user.name || 'Tài khoản' %>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/profile">Thông tin tài khoản</a></li>
+                            <li><a class="dropdown-item" href="/orders">Đơn hàng của tôi</a></li>
+                            <% if (user.role==='admin' ) { %>
+                                <li><a class="dropdown-item" href="/admin">Quản trị</a></li>
+                                <% } %>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item" href="/auth/logout">Đăng xuất</a></li>
+                        </ul>
+                    </div>
+                    <% } else { %>
+                        <a href="/auth/login" class="btn btn-theme">
+                            <i class="fas fa-sign-in-alt me-1"></i>
+                            Đăng nhập
+                        </a>
+                        <% } %>
+            </div>
+        </div>
+    </div>
+</nav>

@@ -1,0 +1,94 @@
+<%- include('partials/header') %>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6">
+                <img src="<%= product.image %>" alt="<%= product.name %>" class="img-fluid rounded">
+            </div>
+            <div class="col-md-6">
+                <h1>
+                    <%= product.name %>
+                </h1>
+                <p class="text-muted">
+                    <%= product.category.name %>
+                </p>
+                <p class="lead">
+                    <%= product.description %>
+                </p>
+                <h3 class="text-primary">
+                    <%= product.price.toLocaleString('vi-VN') %>đ
+                </h3>
+
+                <div class="mt-4">
+                    <div class="input-group mb-3" style="max-width: 200px;">
+                        <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity(-1)">-</button>
+                        <input type="number" id="quantity" class="form-control text-center" value="1" min="1">
+                        <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity(1)">+</button>
+                    </div>
+
+                    <button onclick="addToCart()" class="btn btn-primary btn-lg">
+                        <i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateQuantity(change) {
+            const quantityInput = document.getElementById('quantity');
+            let newValue = parseInt(quantityInput.value) + change;
+            if (newValue < 1) newValue = 1;
+            quantityInput.value = newValue;
+        }
+
+        function addToCart() {
+            const quantity = document.getElementById('quantity').value;
+
+            fetch('/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    productId: '<%= product._id %>',
+                    quantity: quantity
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Cập nhật số lượng trong giỏ hàng trên navbar
+                        const cartBadge = document.querySelector('.cart-count');
+                        if (cartBadge) {
+                            cartBadge.textContent = data.cartCount;
+                        }
+
+                        // Hiển thị thông báo thành công
+                        Toastify({
+                            text: "Đã thêm vào giỏ hàng",
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "#4CAF50",
+                        }).showToast();
+                    } else {
+                        throw new Error(data.error || 'Có lỗi xảy ra');
+                    }
+                })
+                .catch(error => {
+                    // Hiển thị thông báo lỗi
+                    Toastify({
+                        text: error.message,
+                        duration: 3000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#f44336",
+                    }).showToast();
+                });
+        }
+    </script>
+
+    <%- include('partials/footer') %>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= product.name %> - Siêu thị mini Bely
+    </title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: <%=theme.primary %>;
+            --secondary-color: <%=theme.secondary %>;
+            --accent-color: <%=theme.accent %>;
+            --border-color: <%=theme.borderColor %>;
+        }
+
+        .btn-theme {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .btn-theme:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .product-image {
+            max-height: 400px;
+            object-fit: contain;
+        }
+
+        .quantity-input {
+            width: 80px;
+            text-align: center;
+        }
+
+        .price {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .category-badge {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .related-product-card {
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s;
+        }
+
+        .related-product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .related-product-image {
+            height: 200px;
+            object-fit: cover;
+        }
+
+        #addToCartMessage {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('partials/navbar') %>
+
+        <!-- Thông báo thêm vào giỏ hàng -->
+        <div id="addToCartMessage" class="alert alert-success" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            Đã thêm sản phẩm vào giỏ hàng
+        </div>
+
+        <div class="container py-5">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/" style="color: var(--primary-color)">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a href="/products" style="color: var(--primary-color)">Sản phẩm</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <%= product.name %>
+                    </li>
+                </ol>
+            </nav>
+
+            <div class="row">
+                <!-- Ảnh sản phẩm -->
+                <div class="col-md-6">
+                    <img src="<%= product.image %>" alt="<%= product.name %>" class="img-fluid product-image">
+                </div>
+
+                <!-- Thông tin sản phẩm -->
+                <div class="col-md-6">
+                    <span class="category-badge">
+                        <i class="fas fa-tag me-1"></i>
+                        <%= product.category.name %>
+                    </span>
+                    <h1 class="mb-3">
+                        <%= product.name %>
+                    </h1>
+                    <p class="price mb-3">
+                        <%= product.price.toLocaleString('vi-VN') %>₫
+                    </p>
+                    <p class="mb-4">
+                        <%= product.description %>
+                    </p>
+
+                    <div class="mb-4">
+                        <label class="form-label">Số lượng:</label>
+                        <div class="input-group" style="width: 150px;">
+                            <button class="btn btn-outline-secondary quantity-decrease" type="button">-</button>
+                            <input type="number" class="form-control quantity-input" value="1" min="1">
+                            <button class="btn btn-outline-secondary quantity-increase" type="button">+</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-theme btn-lg add-to-cart" data-product-id="<%= product._id %>">
+                        <i class="fas fa-shopping-cart me-2"></i>
+                        Thêm vào giỏ hàng
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sản phẩm liên quan -->
+            <% if (relatedProducts && relatedProducts.length> 0) { %>
+                <h3 class="mt-5 mb-4">Sản phẩm liên quan</h3>
+                <div class="row">
+                    <% relatedProducts.forEach(relatedProduct=> { %>
+                        <div class="col-md-3 mb-4">
+                            <div class="card related-product-card h-100">
+                                <img src="<%= relatedProduct.image %>" class="card-img-top related-product-image"
+                                    alt="<%= relatedProduct.name %>">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <%= relatedProduct.name %>
+                                    </h5>
+                                    <p class="card-text price">
+                                        <%= relatedProduct.price.toLocaleString('vi-VN') %>₫
+                                    </p>
+                                    <a href="/products/<%= relatedProduct._id %>" class="btn btn-theme">Xem chi tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                        <% }); %>
+                </div>
+                <% } %>
+        </div>
+
+        <%- include('partials/footer') %>
+
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const quantityInput = document.querySelector('.quantity-input');
+                    const decreaseBtn = document.querySelector('.quantity-decrease');
+                    const increaseBtn = document.querySelector('.quantity-increase');
+                    const addToCartBtn = document.querySelector('.add-to-cart');
+                    const addToCartMessage = document.getElementById('addToCartMessage');
+
+                    // Xử lý nút tăng/giảm số lượng
+                    decreaseBtn.addEventListener('click', () => {
+                        let value = parseInt(quantityInput.value);
+                        if (value > 1) {
+                            quantityInput.value = value - 1;
+                        }
+                    });
+
+                    increaseBtn.addEventListener('click', () => {
+                        let value = parseInt(quantityInput.value);
+                        quantityInput.value = value + 1;
+                    });
+
+                    // Hiển thị thông báo
+                    function showMessage(message, isError = false) {
+                        addToCartMessage.textContent = message;
+                        addToCartMessage.className = `alert ${isError ? 'alert-danger' : 'alert-success'}`;
+                        addToCartMessage.style.display = 'block';
+                        setTimeout(() => {
+                            addToCartMessage.style.display = 'none';
+                        }, 3000);
+                    }
+
+                    // Xử lý thêm vào giỏ hàng
+                    addToCartBtn.addEventListener('click', () => {
+                        const productId = addToCartBtn.dataset.productId;
+                        const quantity = parseInt(quantityInput.value);
+
+                        if (quantity < 1) {
+                            showMessage('Số lượng phải lớn hơn 0', true);
+                            return;
+                        }
+
+                        fetch('/cart/add', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ productId, quantity })
+                        })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.message) {
+                                    showMessage(data.message);
+                                    // Cập nhật số lượng trong giỏ hàng trên navbar
+                                    const cartBadge = document.querySelector('.badge');
+                                    if (cartBadge && data.cartCount !== undefined) {
+                                        cartBadge.textContent = data.cartCount;
+                                    }
+                                } else if (data.error) {
+                                    showMessage(data.error, true);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Lỗi:', error);
+                                showMessage('Có lỗi xảy ra khi thêm vào giỏ hàng', true);
+                            });
+                    });
+
+                    // Ngăn chặn nhập số âm
+                    quantityInput.addEventListener('input', () => {
+                        let value = parseInt(quantityInput.value);
+                        if (value < 1 || isNaN(value)) {
+                            quantityInput.value = 1;
+                        }
+                    });
+                });
+            </script>
+</body>
+
+</html>

@@ -1,0 +1,146 @@
+<%- include('partials/header') %>
+
+    <div class="container my-5">
+        <h2 class="mb-4">Đơn hàng của tôi</h2>
+
+        <% if (orders.length===0) { %>
+            <div class="text-center py-5">
+                <h4>Bạn chưa có đơn hàng nào</h4>
+                <a href="/" class="btn btn-primary mt-3">Tiếp tục mua sắm</a>
+            </div>
+            <% } else { %>
+                <div class="row">
+                    <% orders.forEach(order=> { %>
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="card-title mb-0">Đơn hàng #<%= order._id %>
+                                        </h5>
+                                        <span
+                                            class="badge bg-<%= order.status === 'pending' ? 'warning' : order.status === 'confirmed' ? 'info' : order.status === 'shipping' ? 'primary' : order.status === 'delivered' ? 'success' : 'danger' %>">
+                                            <%= order.status==='pending' ? 'Chờ xác nhận' : order.status==='confirmed'
+                                                ? 'Đã xác nhận' : order.status==='shipping' ? 'Đang giao' :
+                                                order.status==='delivered' ? 'Đã giao' : 'Đã hủy' %>
+                                        </span>
+                                    </div>
+                                    <p class="text-muted mb-3">
+                                        <i class="bi bi-calendar3"></i>
+                                        <%= formatDate(order.createdAt) %>
+                                    </p>
+                                    <div class="order-items mb-3">
+                                        <% order.items.slice(0, 2).forEach(item=> { %>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <% if (item.product.image) { %>
+                                                        <img src="<%= item.product.image %>"
+                                                            alt="<%= item.product.name %>" class="img-thumbnail me-2"
+                                                            style="width: 50px; height: 50px; object-fit: cover;">
+                                                        <% } %>
+                                                            <div>
+                                                                <div class="fw-medium">
+                                                                    <%= item.product.name %>
+                                                                </div>
+                                                                <small class="text-muted">
+                                                                    <%= item.quantity %> x <%=
+                                                                            formatCurrency(item.price) %>
+                                                                </small>
+                                                            </div>
+                                                </div>
+                                                <span class="fw-bold">
+                                                    <%= formatCurrency(item.price * item.quantity) %>
+                                                </span>
+                                            </div>
+                                            <% }); %>
+                                                <% if (order.items.length> 2) { %>
+                                                    <div class="text-muted text-center">
+                                                        và <%= order.items.length - 2 %> sản phẩm khác
+                                                    </div>
+                                                    <% } %>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="h6 mb-0">Tổng tiền:</span>
+                                        <span class="h6 fw-bold mb-0">
+                                            <%= formatCurrency(order.totalAmount + order.shippingFee) %>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a href="/orders/<%= order._id %>" class="btn btn-outline-primary flex-grow-1">
+                                            <i class="bi bi-eye"></i> Chi tiết
+                                        </a>
+                                        <% if (order.status==='pending' ) { %>
+                                            <button type="button" class="btn btn-outline-danger"
+                                                onclick="cancelOrder('<%= order._id %>')">
+                                                <i class="bi bi-x-circle"></i> Hủy đơn
+                                            </button>
+                                            <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <% }); %>
+                </div>
+                <% } %>
+    </div>
+
+    <script>
+        async function cancelOrder(orderId) {
+            try {
+                const result = await Swal.fire({
+                    title: 'Bạn có chắc chắn?',
+                    text: "Bạn muốn hủy đơn hàng này?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Hủy đơn',
+                    cancelButtonText: 'Không'
+                });
+
+                if (result.isConfirmed) {
+                    // Hiển thị loading
+                    Swal.fire({
+                        title: 'Đang xử lý...',
+                        text: 'Vui lòng chờ trong giây lát',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    const response = await fetch(`/orders/${orderId}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công!',
+                            text: data.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        window.location.reload();
+                    } else {
+                        throw new Error(data.error);
+                    }
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: error.message || 'Không thể hủy đơn hàng. Vui lòng thử lại sau.'
+                });
+            }
+        }
+    </script>
+
+    <%- include('partials/footer') %>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý sản phẩm - Siêu thị mini Bely</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+
+<body>
+    <!-- Admin Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/dashboard">Bely Admin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="adminNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/products">Sản phẩm</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/categories">Danh mục</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/users">Người dùng</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/" target="_blank">Xem trang web</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/logout">Đăng xuất</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Quản lý sản phẩm</h1>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                <i class="fas fa-plus me-2"></i>Thêm sản phẩm
+            </button>
+        </div>
+
+        <!-- Products Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Hình ảnh</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Danh mục</th>
+                                <th>Giá</th>
+                                <th>Số lượng</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% products.forEach((product)=> { %>
+                                <tr>
+                                    <td>
+                                        <img src="<%= product.image %>" alt="<%= product.name %>"
+                                            style="width: 50px; height: 50px; object-fit: cover;">
+                                    </td>
+                                    <td>
+                                        <%= product.name %>
+                                    </td>
+                                    <td>
+                                        <%= product.category ? product.category.name : 'Không có' %>
+                                    </td>
+                                    <td>
+                                        <%= product.price.toLocaleString('vi-VN') %> đ
+                                    </td>
+                                    <td>
+                                        <%= product.quantity %>
+                                    </td>
+                                    <td>
+                                        <span class="badge <%= product.isActive ? 'bg-success' : 'bg-danger' %>">
+                                            <%= product.isActive ? 'Còn hàng' : 'Hết hàng' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary me-2"
+                                            onclick="editProduct('<%= product._id %>')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger"
+                                            onclick="deleteProduct('<%= product._id %>')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                                    <% if (products.length===0) { %>
+                                        <tr>
+                                            <td colspan="7" class="text-center">Chưa có sản phẩm nào</td>
+                                        </tr>
+                                        <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal fade" id="addProductModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thêm sản phẩm mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addProductForm" onsubmit="return handleAddProduct(event)">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="productName" class="form-label">Tên sản phẩm</label>
+                            <input type="text" class="form-control" id="productName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productCategory" class="form-label">Danh mục</label>
+                            <select class="form-select" id="productCategory" name="category" required>
+                                <option value="">Chọn danh mục</option>
+                                <% categories.forEach((category)=> { %>
+                                    <option value="<%= category._id %>">
+                                        <%= category.name %>
+                                    </option>
+                                    <% }); %>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productPrice" class="form-label">Giá</label>
+                            <input type="number" class="form-control" id="productPrice" name="price" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productQuantity" class="form-label">Số lượng</label>
+                            <input type="number" class="form-control" id="productQuantity" name="quantity" min="0"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productDescription" class="form-label">Mô tả</label>
+                            <textarea class="form-control" id="productDescription" name="description" rows="3"
+                                required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productImage" class="form-label">Hình ảnh</label>
+                            <input type="file" class="form-control" id="productImage" name="image" accept="image/*"
+                                required>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="productStatus" name="isActive" checked>
+                            <label class="form-check-label" for="productStatus">Còn hàng</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Thêm sản phẩm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function handleAddProduct(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/admin/products', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Thêm sản phẩm thành công');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Đã xảy ra lỗi khi thêm sản phẩm');
+                }
+            } catch (error) {
+                alert('Đã xảy ra lỗi khi thêm sản phẩm');
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+                try {
+                    const response = await fetch(`/admin/products/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        alert('Xóa sản phẩm thành công');
+                        window.location.reload();
+                    } else {
+                        const data = await response.json();
+                        alert(data.message || 'Đã xảy ra lỗi khi xóa sản phẩm');
+                    }
+                } catch (error) {
+                    alert('Đã xảy ra lỗi khi xóa sản phẩm');
+                }
+            }
+        }
+
+        function editProduct(id) {
+            // Implement edit functionality
+            alert('Chức năng đang được phát triển');
+        }
+    </script>
+</body>
+
+</html>

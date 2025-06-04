@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= product.name %> - Admin Bely
+    </title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg bg-white">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/images/logo.png" alt="Bely Store" height="40">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard">
+                            <i class="fas fa-tachometer-alt me-1"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/products">
+                            <i class="fas fa-box me-1"></i>
+                            Sản phẩm
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/categories">
+                            <i class="fas fa-tags me-1"></i>
+                            Danh mục
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/users">
+                            <i class="fas fa-users me-1"></i>
+                            Người dùng
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <a href="/" class="btn btn-outline-primary me-2" target="_blank">
+                        <i class="fas fa-external-link-alt me-1"></i>
+                        Xem trang web
+                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>
+                            <%= locals.user ? user.username : 'Admin' %>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/profile">Tài khoản</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="/auth/logout">Đăng xuất</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/admin/products">Sản phẩm</a></li>
+                <li class="breadcrumb-item active">
+                    <%= product.name %>
+                </li>
+            </ol>
+        </nav>
+
+        <div class="row g-4">
+            <!-- Product Info -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Thông tin sản phẩm</h5>
+                        <div>
+                            <a href="/admin/products/<%= product._id %>/edit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-edit me-1"></i>
+                                Sửa
+                            </a>
+                            <button class="btn btn-danger btn-sm ms-2" onclick="deleteProduct('<%= product._id %>')">
+                                <i class="fas fa-trash me-1"></i>
+                                Xóa
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <img src="<%= product.image %>" alt="<%= product.name %>"
+                                    class="img-fluid rounded mb-3">
+                                <div class="d-grid">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="changeImage()">
+                                        <i class="fas fa-camera me-1"></i>
+                                        Đổi hình ảnh
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">ID Sản phẩm</small>
+                                    <div class="d-flex align-items-center">
+                                        <code class="me-2"><%= product._id %></code>
+                                        <button class="btn btn-sm btn-light"
+                                            onclick="copyToClipboard('<%= product._id %>')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">Tên sản phẩm</small>
+                                    <h4 class="mb-0">
+                                        <%= product.name %>
+                                    </h4>
+                                </div>
+
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">Danh mục</small>
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-tag me-1"></i>
+                                        <%= product.category ? product.category.name : 'Chưa phân loại' %>
+                                    </span>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Giá bán</small>
+                                        <h5 class="text-primary mb-0">
+                                            <%= product.price.toLocaleString('vi-VN') %> đ
+                                        </h5>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Số lượng trong kho</small>
+                                        <h5 class="mb-0">
+                                            <%= product.quantity %>
+                                                <% if (product.quantity <=10) { %>
+                                                    <span class="badge bg-warning ms-1">Sắp hết hàng</span>
+                                                    <% } %>
+                                        </h5>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">Trạng thái</small>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="activeStatus"
+                                            <%=product.isActive ? 'checked' : '' %> onchange="updateStatus('<%=
+                                            product._id %>')">
+                                            <label class="form-check-label" for="activeStatus">
+                                                <%= product.isActive ? 'Đang bán' : 'Ngừng bán' %>
+                                            </label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <small class="text-muted d-block">Mô tả sản phẩm</small>
+                                    <p class="mb-0">
+                                        <%= product.description %>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Stats -->
+                <div class="card mt-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Thống kê bán hàng</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 text-center">
+                                    <div class="text-primary mb-2">
+                                        <i class="fas fa-eye fa-2x"></i>
+                                    </div>
+                                    <h3 class="mb-1">0</h3>
+                                    <small class="text-muted">Lượt xem</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 text-center">
+                                    <div class="text-success mb-2">
+                                        <i class="fas fa-shopping-cart fa-2x"></i>
+                                    </div>
+                                    <h3 class="mb-1">0</h3>
+                                    <small class="text-muted">Đã bán</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 text-center">
+                                    <div class="text-info mb-2">
+                                        <i class="fas fa-money-bill fa-2x"></i>
+                                    </div>
+                                    <h3 class="mb-1">0đ</h3>
+                                    <small class="text-muted">Doanh thu</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 text-center">
+                                    <div class="text-warning mb-2">
+                                        <i class="fas fa-star fa-2x"></i>
+                                    </div>
+                                    <h3 class="mb-1">0</h3>
+                                    <small class="text-muted">Đánh giá</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Quick Actions -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Thao tác nhanh</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" onclick="updatePrice()">
+                                <i class="fas fa-dollar-sign me-1"></i>
+                                Cập nhật giá
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="updateStock()">
+                                <i class="fas fa-boxes me-1"></i>
+                                Cập nhật tồn kho
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="addPromotion()">
+                                <i class="fas fa-percent me-1"></i>
+                                Thêm khuyến mãi
+                            </button>
+                            <a href="/admin/products/<%= product._id %>/variants" class="btn btn-outline-primary">
+                                <i class="fas fa-list me-1"></i>
+                                Quản lý biến thể
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History -->
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Lịch sử cập nhật</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Cập nhật giá</h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            <%= new Date(product.updatedAt).toLocaleString('vi-VN') %>
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-primary">Giá</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Tạo sản phẩm</h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            <%= new Date(product.createdAt).toLocaleString('vi-VN') %>
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-success">Tạo mới</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            alert('Đã sao chép ID sản phẩm!');
+        }
+
+        function changeImage() {
+            // Implement image change logic
+        }
+
+        async function updateStatus(id) {
+            const checkbox = document.getElementById('activeStatus');
+            try {
+                const response = await fetch(`/admin/products/${id}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ isActive: checkbox.checked })
+                });
+
+                if (response.ok) {
+                    const label = checkbox.nextElementSibling;
+                    label.textContent = checkbox.checked ? 'Đang bán' : 'Ngừng bán';
+                } else {
+                    alert('Đã xảy ra lỗi khi cập nhật trạng thái');
+                    checkbox.checked = !checkbox.checked;
+                }
+            } catch (error) {
+                alert('Đã xảy ra lỗi khi cập nhật trạng thái');
+                checkbox.checked = !checkbox.checked;
+            }
+        }
+
+        function updatePrice() {
+            const newPrice = prompt('Nhập giá mới:');
+            if (newPrice && !isNaN(newPrice)) {
+                // Implement price update logic
+            }
+        }
+
+        function updateStock() {
+            const newStock = prompt('Nhập số lượng tồn kho mới:');
+            if (newStock && !isNaN(newStock)) {
+                // Implement stock update logic
+            }
+        }
+
+        function addPromotion() {
+            // Implement promotion logic
+        }
+
+        async function deleteProduct(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+                try {
+                    const response = await fetch(`/admin/products/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        alert('Xóa sản phẩm thành công');
+                        window.location.href = '/admin/products';
+                    } else {
+                        const data = await response.json();
+                        alert(data.message || 'Đã xảy ra lỗi khi xóa sản phẩm');
+                    }
+                } catch (error) {
+                    alert('Đã xảy ra lỗi khi xóa sản phẩm');
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
