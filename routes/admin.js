@@ -5,8 +5,8 @@ const path = require('path');
 const fs = require('fs');
 const { isAdmin } = require('../middleware/auth');
 const Product = require('../models/Product');
-const Category = require('../models/category');
-const User = require('../models/user');
+const Category = require('../models/Category');
+const User = require('../models/User');
 const adminProductController = require('../controllers/adminProductController');
 const siteConfig = require('../config/site');
 
