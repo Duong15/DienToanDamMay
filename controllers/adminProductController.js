@@ -1,4 +1,4 @@
-const Product = require('../models/product');
+const Product = require('../models/Product');
 const Category = require('../models/category');
 
 // Hiển thị chi tiết sản phẩm
